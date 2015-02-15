@@ -1,0 +1,42 @@
+10
+
+dir
+0
+svn://svn.code.sf.net/p/anobii2libs/code/trunk/.settings
+svn://svn.code.sf.net/p/anobii2libs/code
+add
+
+
+
+
+
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+9d1cc432-3c55-4c2f-b87f-eb20896d6045
+
+org.eclipse.jdt.core.prefs
+file
+
+
+
+add
+
+
+
+
+
+has-props
+has-prop-mods
+
