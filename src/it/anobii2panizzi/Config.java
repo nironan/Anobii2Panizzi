@@ -9,5 +9,5 @@ public class Config {
 	
 	public static final boolean ORDER_BY_LIBRARY = true;
 	
-	
+	public static final String FILE_LOCATION = "D:/Git_repository/Anobii2Panizzi";
 }
