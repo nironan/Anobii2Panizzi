@@ -91,7 +91,7 @@ public class ZetesisTranslator {
 					String[] nameAuthorStrings = bookStrings[1].split("/");
 
 					out[i].setName(StringUtils.trimToNull(nameAuthorStrings[0]));
-					if (nameAuthorStrings.length > 1) {
+					if (nameAuthorStrings.length > 1) { //TODO: handle also this type of string: [<b>Salinger, J. D.</b>, Il giovane Holden, 2002] 
 						out[i].setAuthor(StringUtils
 								.trimToNull(nameAuthorStrings[1]));
 					}

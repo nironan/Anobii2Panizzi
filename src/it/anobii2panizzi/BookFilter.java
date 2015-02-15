@@ -53,6 +53,24 @@ public class BookFilter {
 		return out;
 	}
 	
+	public static List<BookInfo> filterBookByLibrary(List<BookInfo> unfilteredBooks) {
+		// oggetto di output a cui aggiungere i candidati
+		List<BookInfo> outBooks = new ArrayList<BookInfo>();
+		
+		if (!Config.ORDER_BY_LIBRARY) {
+			// TODO: sort by availability
+		}
+		
+		for (BookInfo aBook : unfilteredBooks) {
+			if (StringUtils.containsIgnoreCase(aBook.getLibrary(), Config.DEFAULT_LIBRARY)) {
+				outBooks.add(aBook);
+			}
+		}
+		
+		return outBooks;
+	}
+
+	
 	/**
 	 * Filtra i libri passati in input
 	 * 
@@ -90,17 +108,17 @@ public class BookFilter {
 		// TODO da buttare via, e da aggiungere un filtro successivo a seconda della disponibilità...
 		
 		// se ho trovato più di un risultato provo a fare ulteriori filtri..
-		if (bookList.size() > 0) {
-			List<BookInfo> bookListCleaned = new ArrayList<BookInfo>();
-			for (BookInfo aBook : bookList) {
-				if (StringUtils.equalsIgnoreCase(aBook.getAuthor(), request.getAuthor())) {
-					bookListCleaned.add(aBook);
-				}
-			}
-			if (bookListCleaned.size() > 0 && bookListCleaned.size() != bookList.size()) {
-				bookList = bookListCleaned;
-			}
-		}
+//		if (bookList.size() > 0) {
+//			List<BookInfo> bookListCleaned = new ArrayList<BookInfo>();
+//			for (BookInfo aBook : bookList) {
+//				if (StringUtils.equalsIgnoreCase(aBook.getAuthor(), request.getAuthor())) {
+//					bookListCleaned.add(aBook);
+//				}
+//			}
+//			if (bookListCleaned.size() > 0 && bookListCleaned.size() != bookList.size()) {
+//				bookList = bookListCleaned;
+//			}
+//		}
 		
 		return bookList.toArray(new BookInfo[bookList.size()]);
 	}

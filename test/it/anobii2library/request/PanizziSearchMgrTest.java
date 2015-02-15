@@ -1,6 +1,9 @@
 package it.anobii2library.request;
 
 import static org.junit.Assert.*;
+
+import java.util.List;
+
 import it.anobii2panizzi.Book;
 import it.anobii2panizzi.BookInfo;
 
@@ -30,10 +33,11 @@ public class PanizziSearchMgrTest {
 //			fail("Errore nella ricerca! ");
 //		}
 //	}
-
+ 
 	@Test
 	public void testSearchBookComplete() {
 		try {
+			// step 1: search by title (case insensitive), filtering by the most relevant one (perfect hit) 
 			Book request = new Book();
 			request.setName("il GIOVANE holden");
 			BookInfo[] books = PanizziSearchMgr.searchBook(request);
@@ -41,16 +45,25 @@ public class PanizziSearchMgrTest {
 			assertNotNull(books);
 			assertFalse("Nessun libro trovato", books.length == 0);
 			
-			books[0].setAuthor("J.D. Salinger");
+			for (BookInfo myBook : books) {
+				myBook.setAuthor("J.D. Salinger");
+				// step 2: open the link associated with the title and filter by author  
+				BookInfo[] bookLocations = PanizziSearchMgr.searchAvailableEditions(request, myBook);
+				
+				assertNotNull(bookLocations);
+				assertFalse("Nessun libro trovato", ArrayUtils.isEmpty(bookLocations));
 			
-			BookInfo[] bookLocations = PanizziSearchMgr.searchAvailableEditions(request, books[0]);
-			
-			assertNotNull(bookLocations);
-			assertFalse("Nessun libro trovato", ArrayUtils.isEmpty(bookLocations));
-		
-			PanizziSearchMgr.getEditionCompleteInfo(bookLocations[0]);
-			
-			System.out.println("informazioni complete: " + bookLocations[0]);
+				for (BookInfo aBook : bookLocations) {
+					List<BookInfo> booksComplete = PanizziSearchMgr.getEditionCompleteInfo(aBook);
+					
+//					assertNotNull(booksComplete);
+//					assertFalse("Nessun libro trovato per la libreria selezionata", booksComplete.size() == 0);
+					if (booksComplete != null && booksComplete.size() > 0) {	
+						System.out.println("informazioni complete: " + booksComplete.get(0));
+						break;
+					}
+				}
+			}
 			
 		} catch (Exception exc) {
 			exc.printStackTrace(System.err);
