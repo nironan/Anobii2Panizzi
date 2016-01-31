@@ -47,6 +47,7 @@ public class PanizziSearchMgrTest {
 			
 			for (BookInfo myBook : books) {
 				myBook.setAuthor("J.D. Salinger");
+				request.setAuthor("J.D. Salinger");
 				// step 2: open the link associated with the title and filter by author  
 				BookInfo[] bookLocations = PanizziSearchMgr.searchAvailableEditions(request, myBook);
 				
@@ -56,12 +57,15 @@ public class PanizziSearchMgrTest {
 				for (BookInfo aBook : bookLocations) {
 					List<BookInfo> booksComplete = PanizziSearchMgr.getEditionCompleteInfo(aBook);
 					
-//					assertNotNull(booksComplete);
-//					assertFalse("Nessun libro trovato per la libreria selezionata", booksComplete.size() == 0);
-					if (booksComplete != null && booksComplete.size() > 0) {	
-						System.out.println("informazioni complete: " + booksComplete.get(0));
-						break;
+					booksComplete = PanizziSearchMgr.getAvailability(booksComplete);
+					
+					assertNotNull(booksComplete);
+					assertFalse("Nessun libro trovato per la libreria selezionata", booksComplete.size() == 0);
+					
+					for (BookInfo aBookComplete : booksComplete) {
+						System.out.println("informazioni complete: " + aBookComplete);
 					}
+					break;
 				}
 			}
 			

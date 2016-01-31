@@ -1,6 +1,10 @@
 package it.anobii2panizzi;
 
 public class Book {
+	@Override
+	public String toString() {
+		return "Book [name=" + name + ", author=" + author + ", barCode=" + barCode + "]";
+	}
 	private String name;
 	private String author;
 	private String barCode;

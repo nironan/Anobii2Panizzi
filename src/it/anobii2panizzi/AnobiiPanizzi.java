@@ -5,6 +5,7 @@ import it.anobii2library.request.PanizziSearchMgr;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +44,7 @@ public class AnobiiPanizzi {
 			//TODO split the single requests as threads for performance tuning
 			
 			// 1. loads the wishlist and creates the appropriate requests
-			Workbook wb = WorkbookFactory.create(new File(Config.FILE_LOCATION));
+			Workbook wb = WorkbookFactory.create(new File(Config.INPUT_FILE_LOCATION));
 			Sheet sh = wb.getSheetAt(0);
 			
 			int counter = 0;
@@ -61,35 +62,39 @@ public class AnobiiPanizzi {
 				request.setName(row.getCell(2).getStringCellValue().trim());
 				BookInfo[] books = PanizziSearchMgr.searchBook(request);
 				
-				assertNotNull(books);
-				assertFalse("Nessun libro trovato", books.length == 0);
+				if (books == null || ArrayUtils.isEmpty(books)) {
+					System.out.println("Non trovato LIBRO " + request);
+					continue;
+				}
 				
 				for (BookInfo myBook : books) {
 					myBook.setAuthor(row.getCell(4).getStringCellValue().trim());
 					// step 2: open the link associated with the title and filter by author  
 					BookInfo[] bookLocations = PanizziSearchMgr.searchAvailableEditions(request, myBook);
 					
-					assertNotNull(bookLocations);
-					assertFalse("Nessun libro trovato", ArrayUtils.isEmpty(bookLocations));
+					if (bookLocations == null || ArrayUtils.isEmpty(bookLocations)) {
+						System.out.println("Non trovato AUTORE " + request);
+						continue;
+					}
 				
 					for (BookInfo aBook : bookLocations) {
 						List<BookInfo> booksComplete = PanizziSearchMgr.getEditionCompleteInfo(aBook);
 						
-//						assertNotNull(booksComplete);
-//						assertFalse("Nessun libro trovato per la libreria selezionata", booksComplete.size() == 0);
+						booksComplete = PanizziSearchMgr.getAvailability(booksComplete);
+						
 						if (booksComplete != null && booksComplete.size() > 0) {
-							row.getCell(9).setCellValue(booksComplete.get(0).getLibrary());;
+							// TODO if one of the instances is available, take that one!
+							row.createCell(12).setCellValue(booksComplete.get(0).getLibrary());
+							row.createCell(13).setCellValue(booksComplete.get(0).getAvailability());;
 							System.out.println("informazioni complete: " + booksComplete.get(0));
 							break;
 						}
 					}
 				}
 			}
-			  
-			// 2. fills in the book informations
-			
-			// 3. writes the book details to the wishlist
-
+			FileOutputStream out = new FileOutputStream(Config.OUTPUT_FILE_LOCATION);
+		    wb.write(out);
+		    out.close();
 			
 		} catch (Exception exc) {
 			exc.printStackTrace(System.err);

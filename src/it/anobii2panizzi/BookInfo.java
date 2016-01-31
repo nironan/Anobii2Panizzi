@@ -16,8 +16,10 @@ public class BookInfo extends Book implements Cloneable {
 	}
 	private String href;
 	private String position;
+	private String availabilityHref;
 	private String library;
 	private String inventory;
+	private String availability;
 	private int availStatus;
 	private String year;
 	
@@ -27,6 +29,10 @@ public class BookInfo extends Book implements Cloneable {
 	public String getHrefSubPosition() {
 		String[] splittedHref = this.href.split(",");
 		return splittedHref[splittedHref.length - 2];
+	}
+	
+	public String getRecordForAvailabilityHref() {
+		return this.availabilityHref.substring(this.availabilityHref.lastIndexOf("RECORD=") + 7);
 	}
 	public void setHref(String href) {
 		this.href = href;
@@ -50,14 +56,12 @@ public class BookInfo extends Book implements Cloneable {
 	public void setLibrary(String library) {
 		this.library = library;
 	}
+
 	@Override
 	public String toString() {
-		return "BookInfo [href=" + href + ", position=" + position
-				+ ", library=" + library + ", availStatus=" + availStatus
-				+ ", getName()=" + getName() + ", getAuthor()=" + getAuthor() + ", getInventory()=" + getInventory()
-				+ ", getBarCode()=" + getBarCode() + ", getClass()="
-				+ getClass() + ", hashCode()=" + hashCode() + ", toString()="
-				+ super.toString() + "]";
+		return "BookInfo [href=" + href + ", position=" + position + ", availabilityHref=" + availabilityHref
+				+ ", library=" + library + ", inventory=" + inventory + ", availability=" + availability
+				+ ", availStatus=" + availStatus + ", year=" + year + "]";
 	}
 	public String getYear() {
 		return year;
@@ -70,5 +74,17 @@ public class BookInfo extends Book implements Cloneable {
 	}
 	public void setInventory(String inventory) {
 		this.inventory = inventory;
+	}
+	public String getAvailabilityHref() {
+		return availabilityHref;
+	}
+	public void setAvailabilityHref(String availabilityHref) {
+		this.availabilityHref = availabilityHref;
+	}
+	public String getAvailability() {
+		return availability;
+	}
+	public void setAvailability(String availability) {
+		this.availability = availability;
 	}
 }

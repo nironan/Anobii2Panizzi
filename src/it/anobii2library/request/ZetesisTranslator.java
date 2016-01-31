@@ -1,6 +1,7 @@
 package it.anobii2library.request;
 
 import it.anobii2panizzi.BookInfo;
+import it.anobii2panizzi.Config;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -109,15 +110,13 @@ public class ZetesisTranslator {
 		return out;
 	}
 
-	private static final String TAG_B = "<b>";
-	private static final String TAG_B_END = "</b>";
-
 //	private static final String INIZIO_TAG_NOME_BIBLIOTECA = "&nbsp;&nbsp;&nbsp;<font size="+1">";
-	
+	// single result even though many instances may be present - used to bypass Zetesis' crazy 
 	protected static List<BookInfo> getBookCompleteInfo(byte[] response, BookInfo bookReq)
 			throws Exception {
 
 		List<BookInfo> out = new ArrayList<BookInfo>();
+		
 		ByteArrayInputStream bos = null;
 		try {
 			bos = new ByteArrayInputStream(response);
@@ -132,69 +131,63 @@ public class ZetesisTranslator {
 				if (elements.hasNext()) {
 					el = elements.next();
 					newBook.setPosition(el.text());
+					
+					String inventory = el.nextElementSibling().nextElementSibling().text();
+					if (inventory.indexOf("Inventario: ") >= 0) {
+						inventory = inventory.substring(12);
+					}
+					newBook.setInventory(inventory.trim());
 				}
 				out.add(newBook);				
 			}
 			
-			
-			
-			//			Source jerichoSource = new Source(bos);
-//			jerichoSource.fullSequentialParse();
-			
-			// cerco tutti i link con HTZBLK
-			// jerichoSource.
-
-//			TextExtractor te = new TextExtractor(jerichoSource) {
-//				public boolean excludeElement(StartTag startTag) {
-//					return false;
-//				}
-//			};
-//			//TODO parsing secco
-//			
-//			System.out.println(te.setIncludeAttributes(true).toString());
-//
-//			String pageText = te.setIncludeAttributes(true).toString();
-//			
-//			int libraryStrIdx = pageText.indexOf("Biblioteca");
-//			if (libraryStrIdx > -1) {
-//				bookReq.setLibrary(pageText.substring(libraryStrIdx + "Biblioteca".length(), 
-//						pageText.indexOf("Collocazione")));
-//			}			
-//			
-//			int positionStrIdx = pageText.indexOf("Collocazione:");
-//			if (positionStrIdx > -1) {
-//				bookReq.setPosition(pageText.substring(positionStrIdx + "Collocazione:".length(), 
-//						pageText.indexOf("Inventario")));
-//			}			
-//
-//			int inventoryStrIdx = pageText.indexOf("Inventario:");
-//			if (inventoryStrIdx > -1) {
-//				bookReq.setInventory(pageText.substring(inventoryStrIdx + "Inventario:".length(), inventoryStrIdx + "Inventario:".length() + 12));
-//			}
-			
-//			List<Element> tagList = jerichoSource.getAllElements("font");
-//			if (tagList != null) {
-//				out = new BookInfo();
-//				String a = "";
-//				for (Element aElem : tagList) {
-//
-//					List<Element> elemtni = aElem.getAllElements();
-//					
-////					List<Element> elem2 = aElem.getParentElement()
-////							.getAllElements("b");
-//
-////					Element em = elem2.get(0);
-//
-//				}
-//
-//				// out.setHref(tag.getAttributeValue("href"));
-//				// out.setName(tag.getParentElement().getFirstElement("font").getContent().toString().trim());
-//			}
+			elements = doc.select("input[name=HTZMNP]").iterator();
+			if (elements != null && elements.hasNext()) {
+				org.jsoup.nodes.Element el = elements.next();
+				
+				for (BookInfo aBook : out) {
+					aBook.setAvailabilityHref(el.val());
+				}
+			}
 
 		} finally {
 			IOUtils.closeQuietly(bos);
 		}
 		
+		return out;
+	}
+	
+
+	protected static List<BookInfo> getBookAvailability(byte[] response, List<BookInfo> bookReqs)
+			throws Exception {
+
+		List<BookInfo> out = new ArrayList<BookInfo>();
+		ByteArrayInputStream bos = null;
+		try {
+			bos = new ByteArrayInputStream(response);
+
+			Document doc = Jsoup.parse(new String(response));
+			Iterator<org.jsoup.nodes.Element> elements = doc.select("li").iterator();
+			
+			while (elements.hasNext()) {
+				org.jsoup.nodes.Element el = elements.next();
+				String elText = el.text();
+				String availability = elText.substring(elText.indexOf("===>")+4);
+				String libraryName = elText.substring(0, elText.indexOf("Coll")).trim();
+				String inventory = elText.substring(elText.indexOf("Inv. ") + 5, elText.indexOf("===>")).trim();
+				for (BookInfo aBook : bookReqs) { //TODO usare l'inventory!?
+//					if (Config.areLibrariesEquivalent(libraryName, aBook.getLibrary())) {
+					if (inventory.equalsIgnoreCase(aBook.getInventory())) {
+						aBook.setAvailability(availability);
+						out.add(aBook);
+						break;
+					}
+				}
+			}
+			
+		} finally {
+			IOUtils.closeQuietly(bos);
+		}
 		return out;
 	}
 }

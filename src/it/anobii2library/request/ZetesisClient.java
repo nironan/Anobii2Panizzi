@@ -17,6 +17,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.apache.poi.poifs.property.NPropertyTable;
 
 public class ZetesisClient {
 	/**
@@ -44,21 +45,7 @@ public class ZetesisClient {
 				"http://cataloghi.comune.re.it/Cataloghi/Zetesis.ASP?WCI=Browse&WCE=MENU");
 		httpPost.setEntity(entity);
 
-		HttpClient httpclient = new DefaultHttpClient();
-
-		ResponseHandler<byte[]> handler = new ResponseHandler<byte[]>() {
-			public byte[] handleResponse(HttpResponse response)
-					throws ClientProtocolException, IOException {
-				HttpEntity entity = response.getEntity();
-				if (entity != null) {
-					return EntityUtils.toByteArray(entity);
-				} else {
-					return null;
-				}
-			}
-		};
-
-		return httpclient.execute(httpPost, handler);
+		return new DefaultHttpClient().execute(httpPost, createResponseHandler());
 	}
 	
 	/**
@@ -69,7 +56,6 @@ public class ZetesisClient {
 	 * @return
 	 * @throws Exception
 	 */
-
 	protected static byte[] searchAvailableEditions(BookInfo bookInfo) throws Exception {
 		List<NameValuePair> formparams = new ArrayList<NameValuePair>();
 		formparams.add(new BasicNameValuePair("HTZLKP", bookInfo.getHref()));
@@ -86,21 +72,7 @@ public class ZetesisClient {
 				"http://cataloghi.comune.re.it/Cataloghi/Zetesis.ASP?WCI=Browse&WCE=MENU");
 		httpPost.setEntity(entity);
 
-		HttpClient httpclient = new DefaultHttpClient();
-
-		ResponseHandler<byte[]> handler = new ResponseHandler<byte[]>() {
-			public byte[] handleResponse(HttpResponse response)
-					throws ClientProtocolException, IOException {
-				HttpEntity entity = response.getEntity();
-				if (entity != null) {
-					return EntityUtils.toByteArray(entity);
-				} else {
-					return null;
-				}
-			}
-		};
-
-		return httpclient.execute(httpPost, handler);
+		return new DefaultHttpClient().execute(httpPost, createResponseHandler());
 	}
 	
 	/**
@@ -123,37 +95,13 @@ public class ZetesisClient {
 				"HTMLMOVE=html/catalogo_i.htm,;BROWSE=TITOLI,0," + hrefSubposition + "," + hrefSubposition + ",14"
 				+";BROWSE=MAIN,0," + hrefSubposition + "," + hrefSubposition + ",14"));
 		
-		
-//		formparams.add(new BasicNameValuePair("WCI", "Browse"));
-//		formparams.add(new BasicNameValuePair("WCE", "MENU"));
-//		formparams.add(new BasicNameValuePair("HTZMNP",
-//				"HTMLMOVE=html/catalogo_i.htm,;BROWSE=TITOLI,0,177328,177328,14;BROWSE=MAIN,1,442981,442981,14"));
-//		formparams.add(new BasicNameValuePair("HTZLKP", ""));
-//		formparams
-//		.add(new BasicNameValuePair("HTZEXT",
-//				"LNG=ITA;HLP=WWW-BROWSE-HLP,1;WDB=DB1;UID=111227_15150D33"));
-//		formparams.add(new BasicNameValuePair("HTZFNF", bookInfo.getName()));
 		UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formparams,
 				"UTF-8");
 		HttpPost httpPost = new HttpPost(
 				"http://cataloghi.comune.re.it/Cataloghi/Zetesis.ASP?WCI=Browse&WCE=MENU");
 		httpPost.setEntity(entity);
 		
-		HttpClient httpclient = new DefaultHttpClient();
-		
-		ResponseHandler<byte[]> handler = new ResponseHandler<byte[]>() {
-			public byte[] handleResponse(HttpResponse response)
-					throws ClientProtocolException, IOException {
-				HttpEntity entity = response.getEntity();
-				if (entity != null) {
-					return EntityUtils.toByteArray(entity);
-				} else {
-					return null;
-				}
-			}
-		};
-		
-		return httpclient.execute(httpPost, handler);
+		return new DefaultHttpClient().execute(httpPost, createResponseHandler());
 	}
 	/**
 	 * Quarta chiamata: a partire da un titolo, da una href e da una posizione, simula il click sul link "Disponibilità"
@@ -165,16 +113,30 @@ public class ZetesisClient {
 	 */
 	protected static byte[] getBookAvailability(BookInfo bookInfo) throws Exception {
 		List<NameValuePair> formparams = new ArrayList<NameValuePair>();
+		
+		formparams.add(new BasicNameValuePair("HTZEXT", "LNG=ITA;HLP=WWW-BROWSE-HLP,1;WDB=DB1;UID=111227_15150D33"));
+		formparams.add(new BasicNameValuePair("HTZFMF", "2"));
+		formparams.add(new BasicNameValuePair("HTZOWN.x", "9"));
+		formparams.add(new BasicNameValuePair("HTZOWN.y", "16"));
+		
+		String hrefSubposition = bookInfo.getHrefSubPosition();
+		
+		formparams.add(new BasicNameValuePair("HTZMNP",
+				"HTMLMOVE=html/catalogo_i.htm,;BROWSE=TITOLI,0," + hrefSubposition + "," + hrefSubposition + ",14"
+				+";BROWSE=MAIN,0," + hrefSubposition + "," + hrefSubposition + ",14;RECORD=" + bookInfo.getRecordForAvailabilityHref()));
+		
+		UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formparams,
+				"UTF-8");
+		HttpPost httpPost = new HttpPost(
+				"http://cataloghi.comune.re.it/Cataloghi/Zetesis.ASP?WCI=Record&WCE=MENU");
+		httpPost.setEntity(entity);
+		
+		return new DefaultHttpClient().execute(httpPost, createResponseHandler());
+		
+		
+		/*List<NameValuePair> formparams = new ArrayList<NameValuePair>();
 		formparams.add(new BasicNameValuePair("WCI", "Browse"));
 		formparams.add(new BasicNameValuePair("WCE", "MENU"));
-//		formparams.add(new BasicNameValuePair("HTZMNP",
-//				"HTMLMOVE=html/catalogo_i.htm,;BROWSE=TITOLI,0,1,1,10"));
-//		formparams.add(new BasicNameValuePair("HTZLKP", ""));
-//		formparams
-//		.add(new BasicNameValuePair("HTZEXT",
-//				"LNG=ITA;HLP=WWW-BROWSE-HLP,1;WDB=DB1;UID=111227_15150D33"));
-//		formparams.add(new BasicNameValuePair("HTZFNF", bookInfo.getName()));
-		
 		formparams.add(new BasicNameValuePair("HTZEXT", "FMT=MAIN,2;LNG=ITA;HLP=WWW-BROWSE-HLP,1;WDB=DB1;UID=111227_15150D33"));
 		formparams.add(new BasicNameValuePair("HTZFMF", "2"));
 		
@@ -195,9 +157,11 @@ public class ZetesisClient {
 				"http://cataloghi.comune.re.it/Cataloghi/Zetesis.ASP?WCI=Record&WCE=MENU");
 		httpPost.setEntity(entity);
 		
-		HttpClient httpclient = new DefaultHttpClient();
-		
-		ResponseHandler<byte[]> handler = new ResponseHandler<byte[]>() {
+		return new DefaultHttpClient().execute(httpPost, createResponseHandler());*/
+	}
+	
+	private static ResponseHandler<byte[]> createResponseHandler() {
+		return new ResponseHandler<byte[]>() {
 			public byte[] handleResponse(HttpResponse response)
 					throws ClientProtocolException, IOException {
 				HttpEntity entity = response.getEntity();
@@ -208,7 +172,6 @@ public class ZetesisClient {
 				}
 			}
 		};
-		
-		return httpclient.execute(httpPost, handler);
 	}
+	
 }

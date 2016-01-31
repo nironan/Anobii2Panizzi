@@ -12,9 +12,9 @@ public class PanizziSearchMgr {
 
 		// la classe book in ingresso va compilata con i filtri per la ricerca. Vado dal meno preciso al più preciso
 		if (bookReq.getName() != null) {
-			byte[] authorResponse = ZetesisClient.searchBookByTitle(bookReq.getName());
+			byte[] rawResponse = ZetesisClient.searchBookByTitle(bookReq.getName());
 			
-			out = ZetesisTranslator.getBooksFromResponse(authorResponse);
+			out = ZetesisTranslator.getBooksFromResponse(rawResponse);
 		}
 		
 		out = BookFilter.filterBookByName(out, bookReq);
@@ -27,9 +27,9 @@ public class PanizziSearchMgr {
 		
 		// la classe book in ingresso deve già avere i riferimenti completi (URL / id / etc..)
 		if (bookReq != null && bookReq.getName() != null) {
-			byte[] authorResponse = ZetesisClient.searchAvailableEditions(bookReq);
+			byte[] rawResponse = ZetesisClient.searchAvailableEditions(bookReq);
 			
-			out = ZetesisTranslator.getBookEditions(authorResponse);
+			out = ZetesisTranslator.getBookEditions(rawResponse);
 		}
 		
 		out = BookFilter.filterBookByAuthor(out, bookReq);
@@ -37,17 +37,26 @@ public class PanizziSearchMgr {
 		return out;
 	}
 	
-	public static List<BookInfo>  getEditionCompleteInfo(BookInfo bookReq) throws Exception {
+	public static List<BookInfo> getEditionCompleteInfo(BookInfo bookReq) throws Exception {
 		// la classe book in ingresso deve già avere i riferimenti completi (URL / id / etc..)
 		List<BookInfo> out = null;
 		if (bookReq != null && bookReq.getName() != null) {
-			byte[] authorResponse = ZetesisClient.getBookCompleteInfo(bookReq);
+			byte[] rawResponse = ZetesisClient.getBookCompleteInfo(bookReq);
 			
-			out = ZetesisTranslator.getBookCompleteInfo(authorResponse, bookReq);
+			out = ZetesisTranslator.getBookCompleteInfo(rawResponse, bookReq);
 		}
 		
-		out = BookFilter.filterBookByLibrary(out);
-		
 		return out;
+	}
+	
+	public static List<BookInfo> getAvailability(List<BookInfo> bookReq) throws Exception {
+		// la classe book in ingresso deve già avere i riferimenti completi (URL / id / etc..)
+		List<BookInfo> out = null;
+		if (bookReq != null) {
+			byte[] rawResponse = ZetesisClient.getBookAvailability(bookReq.get(0));
+			out = ZetesisTranslator.getBookAvailability(rawResponse, bookReq);
+		}
+		
+		return BookFilter.filterBookByLibrary(out);
 	}
 }
